@@ -24,7 +24,7 @@ class commandHandler(object):
         # Create list of inventory items separated by commas
         if len(self.inventory) >= 1:
             for item in self.inventory:
-                response = response + '%s, ' % (item.strip())
+                response = response + '{0!s}, '.format((item.strip()))
         else:
             response = ''
         
@@ -59,9 +59,9 @@ class commandHandler(object):
         
         # DickieBot can only carry 10 things per channel, so if at capacity, drop the first item
         if len(self.inventory) >= 10:
-            msg = 'drops %s and adds %s to his inventory.' % (self.inventory.pop(0),item)
+            msg = 'drops {0!s} and adds {1!s} to his inventory.'.format(self.inventory.pop(0), item)
         else:
-            msg = 'adds %s to his inventory.' % (item)
+            msg = 'adds {0!s} to his inventory.'.format((item))
         
         return(msg)
      
