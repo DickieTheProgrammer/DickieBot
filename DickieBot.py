@@ -39,10 +39,10 @@ class IRCLogger():
     def __init__(self):
         # Opens a file to log each channel separately, storing the objects
         for channel in G_CHANNELS:
-            self.files[channel] = open('./logs/%s.txt' % (channel.replace('#','')), 'a')
+            self.files[channel] = open('./logs/{0!s}.txt'.format((channel.replace('#',''))), 'a')
                 
         # Opens a file to log non-channel chatter
-        self.files[G_BOTNAME] = open('./logs/%s.txt' % G_BOTNAME, 'a')
+        self.files[G_BOTNAME] = open('./logs/{0!s}.txt'.format(G_BOTNAME), 'a')
             
     # Logs a line to a particular file
     def log(self,channel,msg):
@@ -50,23 +50,23 @@ class IRCLogger():
         if channel in G_CHANNELS: target = channel
         else: target = G_BOTNAME
                
-        timestamp = '[%s]' % (strftime("%x %X",localtime()))
+        timestamp = '[{0!s}]'.format((strftime("%x %X",localtime())))
 
 	if self.files[target].closed:
-	    self.files[target] = open('./logs/%s.txt' % (channel.replace('#','')),'a')
+	    self.files[target] = open('./logs/{0!s}.txt'.format((channel.replace('#',''))),'a')
 
-        self.files[target].write('%s %s\n' % (timestamp, msg))
+        self.files[target].write('{0!s} {1!s}\n'.format(timestamp, msg))
         self.files[target].flush()
 
     # Closes all files
     def close(self):
-        timestamp = '[%s]' % (strftime("%x %X",localtime()))
+        timestamp = '[{0!s}]'.format((strftime("%x %X",localtime())))
 
         for channel in G_CHANNELS:
-            self.files[channel].write('%s: File %s closed.\n' % (timestamp,channel))
+            self.files[channel].write('{0!s}: File {1!s} closed.\n'.format(timestamp, channel))
             self.files[channel].flush()
             self.files[channel].close()
-        self.files[G_BOTNAME].write('%s: File %s closed.\n' % (timestamp,channel))
+        self.files[G_BOTNAME].write('{0!s}: File {1!s} closed.\n'.format(timestamp, channel))
         self.files[G_BOTNAME].flush()
         self.files[G_BOTNAME].close()
 
@@ -118,15 +118,15 @@ class MyIRCBot(irc.IRCClient):
         # Log connection time
         naow = time.asctime(time.localtime(time.time()))
         for channel in G_CHANNELS:
-            self.logger.log(channel,'[connected at %s]' % naow)
+            self.logger.log(channel,'[connected at {0!s}]'.format(naow))
             self.nickList[channel] = []
             self.commands[channel] = commands.commandHandler()
 	    self.shutUp[channel] = [False,dt.now(),0]
 	    self.lastFact[channel] = 0
 	    self.lineCount[channel] = 0
-        self.logger.log(G_BOTNAME,'[connected at %s]' % naow)
+        self.logger.log(G_BOTNAME,'[connected at {0!s}]'.format(naow))
 
-        self.msg('nickserv','ghost %s %s' % (G_BOTNAME,NICKPASS))
+        self.msg('nickserv','ghost {0!s} {1!s}'.format(G_BOTNAME, NICKPASS))
         
     # Called when the connection is lost
     def connectionLost(self, reason):
@@ -137,8 +137,8 @@ class MyIRCBot(irc.IRCClient):
         # Log disconnect time
         naow = time.asctime(time.localtime(time.time()))
         for channel in G_CHANNELS:
-            self.logger.log(channel,'[disconnected at %s]' % naow)
-        self.logger.log(G_BOTNAME,'[disconnected at %s]' % naow)
+            self.logger.log(channel,'[disconnected at {0!s}]'.format(naow))
+        self.logger.log(G_BOTNAME,'[disconnected at {0!s}]'.format(naow))
 
         # Close the files
         self.logger.close()
@@ -146,11 +146,11 @@ class MyIRCBot(irc.IRCClient):
     # Called when bot has registered with a server
     def signedOn(self):
 	# Go ahead and try to ghost and change nick just in case
-	self.msg('nickserv','ghost %s %s' % (G_BOTNAME,NICKPASS))
+	self.msg('nickserv','ghost {0!s} {1!s}'.format(G_BOTNAME, NICKPASS))
         self.setNick(G_BOTNAME)
 
         # Identify with services
-        self.msg('nickServ','identify %s' % NICKPASS)
+        self.msg('nickServ','identify {0!s}'.format(NICKPASS))
         
         # Join them thar channels, initialize nickList for each
         for channel in G_CHANNELS:
@@ -168,7 +168,7 @@ class MyIRCBot(irc.IRCClient):
     # Called when my nick has changed
     def nickChanged(self,nick):
         # Log the change
-        self.logger.log(G_BOTNAME,'[My nick changed to %s]' % nick)
+        self.logger.log(G_BOTNAME,'[My nick changed to {0!s}]'.format(nick))
         
         # Try to regain nick
         #if nick != G_BOTNAME:
@@ -179,7 +179,7 @@ class MyIRCBot(irc.IRCClient):
     # Called when bot joins a channel
     def joined(self, channel):
         # Log the join
-        self.logger.log(channel,'[I have joined %s]' % channel)
+        self.logger.log(channel,'[I have joined {0!s}]'.format(channel))
         
         # Make an entrance
         self.msg(channel,"I'm back, baby.")
@@ -197,7 +197,7 @@ class MyIRCBot(irc.IRCClient):
     # Called when I receive a private message
     def privmsg(self, user, channel, msg):
         # Log the message
-        self.logger.log(channel,'%s: %s - %s' % (channel,user,msg))
+        self.logger.log(channel,'{0!s}: {1!s} - {2!s}'.format(channel, user, msg))
         
         # Strip the nick from the nick@host string
         user = user.split('!', 1)[0]
@@ -209,7 +209,7 @@ class MyIRCBot(irc.IRCClient):
         else:
 	    target = user
 
-	print 'Target - msg - %s' % (target)
+	print 'Target - msg - {0!s}'.format((target))
             
         command,sep,args = '','',''
 
@@ -217,9 +217,9 @@ class MyIRCBot(irc.IRCClient):
         if user not in G_NONOLIST:
             # Check for command in direct address to bot
             # Examples: "BotName: wiki toothpaste", "BotName, !spin"
-            if re.match(r'^%s[\,\:\-]?\s+' % (G_BOTNAME),msg,re.I) != None:
+            if re.match(r'^{0!s}[\,\:\-]?\s+'.format((G_BOTNAME)),msg,re.I) != None:
                 # Split string into botname and message section
-                breakout = re.split(r'^%s[\,\:\-]?\s+' % (G_BOTNAME),msg,re.I)
+                breakout = re.split(r'^{0!s}[\,\:\-]?\s+'.format((G_BOTNAME)),msg,re.I)
                 # Command and command arguments will be in the second half of the list
                 command,sep,args = breakout[1].lstrip('!').partition(' ')
                 
@@ -274,7 +274,7 @@ class MyIRCBot(irc.IRCClient):
                         if contents == '':
                             self.msg(target,'Inventory is empty')
                         else:
-                            self.msg(target,'Current inventory is: [%s]' % contents )
+                            self.msg(target,'Current inventory is: [{0!s}]'.format(contents) )
                     else:
                         self.msg(target,'I haz a flavor.')
                 
@@ -418,7 +418,7 @@ class MyIRCBot(irc.IRCClient):
 		    if re.match(r'^[0-9]+$',args,re.I):
 			if int(args) <= 20:
 			    self.shutUp[channel][2] = int(args)
-			    acknowledgement = 'Ok, %s, I\'ll take a %s minute break.' % (user,args)
+			    acknowledgement = 'Ok, {0!s}, I\'ll take a {1!s} minute break.'.format(user, args)
 			else:
 			    self.shutUp[channel][2] = 5
 			    acknowledgement = 'I\'ll be quiet for 5 minutes instead'
@@ -592,14 +592,14 @@ class MyIRCBot(irc.IRCClient):
 		    channel = breakout[2]
 		    msg = ''
 		    for x in breakout[4:]:
-			msg = '%s%s ' % (msg,x)
+			msg = '{0!s}{1!s} '.format(msg, x)
 		    msg = msg.strip()
  
 	            # Check shut up time
 	    	    self.checkShutUp(channel)
             
 	            # Log the action
-	            self.logger.log(channel,'%s: * %s %s' % (channel,user,msg))
+	            self.logger.log(channel,'{0!s}: * {1!s} {2!s}'.format(channel, user, msg))
 	        
 	            # Determine where replies to this message should go
 	            if channel in G_CHANNELS: 	
@@ -609,7 +609,7 @@ class MyIRCBot(irc.IRCClient):
 			target = user
 	        
 	            # Check for inventory command
-		    pattern = re.compile(r'%s'%G_BOTNAME,re.I)
+		    pattern = re.compile(r'{0!s}'.format(G_BOTNAME),re.I)
 		    msg = re.sub(pattern,G_BOTNAME,msg,re.I).strip('\x01')
 	            command,spc,args = msg.partition(' '+G_BOTNAME+' ')
 	            command = command.lower()
@@ -620,7 +620,7 @@ class MyIRCBot(irc.IRCClient):
 	            
 	                # Do not allow inventory by pm
 	                if target == user or re.match(r'^[\!\@\.][A-Za-z0-9]',theItem,re.I) != None:
-	                    response = 'throws %s back in %s\'s face.' % (theItem,user)
+	                    response = 'throws {0!s} back in {1!s}\'s face.'.format(theItem, user)
 	                else:
 	                    response = self.commands[channel].addToInventory(theItem)
 	                self.describe(target,response)
@@ -631,7 +631,7 @@ class MyIRCBot(irc.IRCClient):
     # Called when user is kicked from the channel    
     def userKicked(self, kickee, channel, kicker, message):
         # Log the kick
-        self.logger.log(channel,'%s was kicked by %s: %s' % (kickee,kicker,message))
+        self.logger.log(channel,'{0!s} was kicked by {1!s}: {2!s}'.format(kickee, kicker, message))
         
         # Remove the user from the channel list
         if kickee in self.nickList[channel]:
@@ -645,13 +645,13 @@ class MyIRCBot(irc.IRCClient):
         for channel in G_CHANNELS:
             # Remove the user from the channel list
             if user in self.nickList[channel]:
-                self.logger.log(channel,'%s has quit' % user)
+                self.logger.log(channel,'{0!s} has quit'.format(user))
                 self.nickList[channel].remove(user)
     
     # Called when a user parts from a channel
     def userLeft(self,user,channel):
         # Log the part
-        self.logger.log(channel,'%s left %s' % (user,channel))
+        self.logger.log(channel,'{0!s} left {1!s}'.format(user, channel))
         
         # Remove the user from the channel list
         if user in self.nickList[channel]:
@@ -660,7 +660,7 @@ class MyIRCBot(irc.IRCClient):
     # Called when a user joins the channel
     def userJoined(self,user,channel):
         # Log the join
-        self.logger.log(channel,'%s has joined %s' % (user,channel))
+        self.logger.log(channel,'{0!s} has joined {1!s}'.format(user, channel))
         
         # Add the user to the channel list
         if user not in self.nickList[channel]:
@@ -673,7 +673,7 @@ class MyIRCBot(irc.IRCClient):
 	    if oldname in self.nickList[channel]:
 		self.nickList[channel].remove(oldname)
 		self.nickList[channel].append(newname)
-		self.logger.log(channel,'%s is not known as %s' % (oldname,newname)) 
+		self.logger.log(channel,'{0!s} is not known as {1!s}'.format(oldname, newname)) 
 
     # Called when mode has changed on a user
     def modeChanged(self,user,channel,set,modes,args):
@@ -683,7 +683,7 @@ class MyIRCBot(irc.IRCClient):
         
     # Overwriting describe because it views the "\" key as an escape character in raw text
     def describe(self,channel,action):
-        self.msg(channel, '\001ACTION %s\001' % action)
+        self.msg(channel, '\001ACTION {0!s}\001'.format(action))
 
 # Controls the creation and connectivity of our bot
 class BotFactory(protocol.ClientFactory):
@@ -709,7 +709,7 @@ class BotFactory(protocol.ClientFactory):
 
 if __name__ == '__main__':
     # Prompt for password in case bot is registered
-    NICKPASS = getpass.getpass('Enter NickServ password for %s: ' % G_BOTNAME)
+    NICKPASS = getpass.getpass('Enter NickServ password for {0!s}: '.format(G_BOTNAME))
 
     # Create new factory
     factory = BotFactory()

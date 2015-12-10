@@ -55,7 +55,7 @@ def wikiScrape(wiki,searchTerm,charLimit=None):
         redirectURL = r.url
 
         if redirectURL == searchURL:
-                return 'Sorry, no article found. Try searching here: %s' % makeTiny(redirectURL)
+                return 'Sorry, no article found. Try searching here: {0!s}'.format(makeTiny(redirectURL))
 
         title = '[' + redirectURL.replace(baseURL,'').replace('_',' ').strip() + '] '
 
@@ -87,7 +87,7 @@ def wikiScrape(wiki,searchTerm,charLimit=None):
         body = body.strip()
 
         if charLimit != None:
-                tinyURL = ' ...more: %s' % (makeTiny(redirectURL))
+                tinyURL = ' ...more: {0!s}'.format((makeTiny(redirectURL)))
                 charLeft = charLimit - (len(tinyURL) + len(title))
 
                 if charLeft <= 0:
@@ -97,4 +97,4 @@ def wikiScrape(wiki,searchTerm,charLimit=None):
 
                 return title+body[0:index-1]+tinyURL
 
-        return '%s %s' % (title,body)
+        return '{0!s} {1!s}'.format(title, body)
